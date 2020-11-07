@@ -1,2 +1,29 @@
 syntax = "proto3";
 
+message  artists{
+  string name = 1;
+  bool member = 2;
+}
+message songs{
+  string title = 1;
+  string  genre = 2;
+  string platform = 3;
+}
+message band{
+  string name = 1;
+}
+message date{
+  int32 date = 1;
+}
+message NewRecordRequest {
+  string name = 1;
+}
+message NewRecordResponse {
+  string message = 1;
+}
+message UpdateRecordRequest {
+  string greet = 1;
+}
+message UpdateRecordResponse {
+  string say = 1;
+}
