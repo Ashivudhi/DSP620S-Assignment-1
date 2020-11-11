@@ -1,4 +1,5 @@
 syntax = "proto3";
+import 'google/protobuf/timestamp.proto';
 
 message  artists{
   string name = 1;
@@ -16,14 +17,25 @@ message date{
   int32 date = 1;
 }
 message NewRecordRequest {
-  string name = 1;
+  string key = 1;
 }
 message NewRecordResponse {
-  string message = 1;
+  string key = 1;
 }
 message UpdateRecordRequest {
-  string greet = 1;
+  string key = 1;
 }
 message UpdateRecordResponse {
-  string say = 1;
+  string key = 1;
+}
+message ReadRecordRequest{
+  //
+}
+message ReadRecordResponse{
+  //
+}
+service Records{
+  rpc new(NewRecordRequest) returns(NewRecordResponse);
+  rpc update(UpdateRecordRequest) returns (UpdateRecordResponse);
+  rpc read(ReadRecordRequest) returns(ReadRecordResponse);
 }
