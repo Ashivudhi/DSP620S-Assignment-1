@@ -17,7 +17,8 @@ message date{
   int32 date = 1;
 }
 message NewRecordRequest {
-  string key = 1;
+  artists artists = 1;
+  songs songs = 2;
 }
 message NewRecordResponse {
   string key = 1;
