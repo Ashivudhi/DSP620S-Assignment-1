@@ -22,6 +22,7 @@ message NewRecordRequest {
 }
 message NewRecordResponse {
   string key = 1;
+
 }
 message UpdateRecordRequest {
   string key = 1;
@@ -36,7 +37,7 @@ message ReadRecordResponse{
   //
 }
 service Records{
-  rpc new(NewRecordRequest) returns(NewRecordResponse);
+  rpc newRecord(NewRecordRequest) returns(NewRecordResponse);
   rpc update(UpdateRecordRequest) returns (UpdateRecordResponse);
   rpc read(ReadRecordRequest) returns(ReadRecordResponse);
 }
