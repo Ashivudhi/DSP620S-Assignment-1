@@ -1,106 +1,96 @@
 import ballerina/grpc;
+import ballerina/crypto;
+import ballerina/io;
 
-public type CaliBlockingClient client object {
+listener grpc:Listener ep = new (9090);
 
-    *grpc:AbstractClientEndpoint;
+function writeIntoJson(json content, string path) returns @tainted error? {
 
-    private grpc:Client grpcClient;
+    io:WritableByteChannel wbc = check io:openWritableFile(path);
 
-    public function __init(string url, grpc:ClientConfiguration? config = ()) {
-        // initialize client endpoint.
-        self.grpcClient = new(url, config);
-        checkpanic self.grpcClient.initStub(self, "blocking", ROOT_DESCRIPTOR, getDescriptorMap());
+     io:WritableCharacterChannel wch = new (wbc, "UTF8");
+     var result = wch.writeJson(content);
+
+     var close = wch.close();
+}
+
+function readIntoJson(string path) returns @tainted json|error{
+    io:ReadableByteChannel rbc = check io:openReadableFile(path);
+
+        io:ReadableCharacterChannel rch = new (rbc, "UTF8");
+        var result = rch.readJson();
+        var close = rch.close();
+
+        return result;
+}
+
+service Cali on ep {
+
+    resource function writeRecord(grpc:Caller caller, NewRecordRequest value) {
+        // Implementation goes here.
+        //--
+            string input = value.toString();
+            byte[] inputArr = input.toBytes();
+
+            byte[] output = crypto:hashMd5(inputArr);
+            string recordKey = output.toBase64();
+            //assigning hashed key to Record key
+            value.rKey = output.toBase16();
+
+            //json newRecord = <json>json.constructFrom(value); type casting
+            json|error newRecord = json.constructFrom(value);
+            json[] allRecords = [];
+            io:println(newRecord);
+            if(newRecord is error){
+                ///
+            }else{
+                //allRecords.push(newRecord);
+                //var readfile = readIntoJson("./storage.json");
+                //if(readfile is error){
+                //    io:println(readfile);
+                //}else {
+                //	io:println(readfile);
+                //
+                //	allRecords = readfile;
+                	allRecords.push(newRecord);
+
+                	                var writingfile = writeIntoJson(allRecords,"./storage.json");
+                                    if(writingfile is error){
+                                        io:println(writingfile.reason());
+                                    }else{
+                                        io:println("Successfully stored!!");
+                                    }
+                }
+
+
+            }
+
+
+
+        // You should return a NewRecordResponse
     }
+    resource function updateRecord(grpc:Caller caller, UpdateRecordRequest value) {
+        // Implementation goes here.
 
-    public remote function writeRecord(NewRecordRequest req, grpc:Headers? headers = ()) returns ([NewRecordResponse, grpc:Headers]|grpc:Error) {
-        
-        var payload = check self.grpcClient->blockingExecute("service.Cali/writeRecord", req, headers);
-        grpc:Headers resHeaders = new;
-        anydata result = ();
-        [result, resHeaders] = payload;
-        
-        return [<NewRecordResponse>result, resHeaders];
-        
+        // You should return a UpdateRecordResponse
     }
+    resource function readRecord(grpc:Caller caller, ReadRecordRequest value) {
+        // Implementation goes here.
 
-    public remote function updateRecord(UpdateRecordRequest req, grpc:Headers? headers = ()) returns ([UpdateRecordResponse, grpc:Headers]|grpc:Error) {
-        
-        var payload = check self.grpcClient->blockingExecute("service.Cali/updateRecord", req, headers);
-        grpc:Headers resHeaders = new;
-        anydata result = ();
-        [result, resHeaders] = payload;
-        
-        return [<UpdateRecordResponse>result, resHeaders];
-        
+        // You should return a ReadRecordResponse
     }
+    resource function readRecord_Key_Version(grpc:Caller caller, ReadRecordRequest_key_Version value) {
+        // Implementation goes here.
 
-    public remote function readRecord(ReadRecordRequest req, grpc:Headers? headers = ()) returns ([ReadRecordResponse, grpc:Headers]|grpc:Error) {
-        
-        var payload = check self.grpcClient->blockingExecute("service.Cali/readRecord", req, headers);
-        grpc:Headers resHeaders = new;
-        anydata result = ();
-        [result, resHeaders] = payload;
-        
-        return [<ReadRecordResponse>result, resHeaders];
-        
+        // You should return a ReadRecordResponse
     }
+    @grpc:ResourceConfig { streaming: true } 
+    resource function readRecord_Criterion(grpc:Caller caller, ReadCriterionRequest value) {
+        // Implementation goes here.
 
-    public remote function readRecord_Key_Version(ReadRecordRequest_key_Version req, grpc:Headers? headers = ()) returns ([ReadRecordResponse, grpc:Headers]|grpc:Error) {
-        
-        var payload = check self.grpcClient->blockingExecute("service.Cali/readRecord_Key_Version", req, headers);
-        grpc:Headers resHeaders = new;
-        anydata result = ();
-        [result, resHeaders] = payload;
-        
-        return [<ReadRecordResponse>result, resHeaders];
-        
+        // You should return a ReadRecordResponse
     }
-
-    public remote function readRecord_Criterion(ReadCriterionRequest req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/readRecord_Criterion", req, msgListener, headers);
-    }
-
-};
-
-public type CaliClient client object {
-
-    *grpc:AbstractClientEndpoint;
-
-    private grpc:Client grpcClient;
-
-    public function __init(string url, grpc:ClientConfiguration? config = ()) {
-        // initialize client endpoint.
-        self.grpcClient = new(url, config);
-        checkpanic self.grpcClient.initStub(self, "non-blocking", ROOT_DESCRIPTOR, getDescriptorMap());
-    }
-
-    public remote function writeRecord(NewRecordRequest req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/writeRecord", req, msgListener, headers);
-    }
-
-    public remote function updateRecord(UpdateRecordRequest req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/updateRecord", req, msgListener, headers);
-    }
-
-    public remote function readRecord(ReadRecordRequest req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/readRecord", req, msgListener, headers);
-    }
-
-    public remote function readRecord_Key_Version(ReadRecordRequest_key_Version req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/readRecord_Key_Version", req, msgListener, headers);
-    }
-
-    public remote function readRecord_Criterion(ReadCriterionRequest req, service msgListener, grpc:Headers? headers = ()) returns (grpc:Error?) {
-        
-        return self.grpcClient->nonBlockingExecute("service.Cali/readRecord_Criterion", req, msgListener, headers);
-    }
-
-};
+}
 
 public type Artists record {|
     string name = "";
@@ -108,14 +98,12 @@ public type Artists record {|
     
 |};
 
-
 public type Songs record {|
     string title = "";
     string genre = "";
     string platform = "";
     
 |};
-
 
 public type NewRecordRequest record {|
     string rKey = "";
@@ -127,7 +115,6 @@ public type NewRecordRequest record {|
     
 |};
 
-
 public type RecordCopy record {|
     string rKey = "";
     int rVersion = 0;
@@ -138,13 +125,11 @@ public type RecordCopy record {|
     
 |};
 
-
 public type NewRecordResponse record {|
     string rkey = "";
     string rVersion = "";
     
 |};
-
 
 public type UpdateRecordRequest record {|
     string rKey = "";
@@ -153,19 +138,16 @@ public type UpdateRecordRequest record {|
     
 |};
 
-
 public type UpdateRecordResponse record {|
     string rKey = "";
     string rVersion = "";
     
 |};
 
-
 public type ReadRecordRequest record {|
     string rKey = "";
     
 |};
-
 
 public type ReadRecordResponse record {|
     string rKey = "";
@@ -177,13 +159,11 @@ public type ReadRecordResponse record {|
     
 |};
 
-
 public type ReadRecordRequest_key_Version record {|
     string rKey = "";
     int rVersion = 0;
     
 |};
-
 
 public type ReadCriterionRequest record {|
     string songTitle = "";

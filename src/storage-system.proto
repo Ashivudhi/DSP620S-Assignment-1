@@ -1,43 +1,76 @@
 syntax = "proto3";
-import 'google/protobuf/timestamp.proto';
+package service;
+import "google/protobuf/wrappers.proto";
 
-message  artists{
+message  Artists{
   string name = 1;
-  bool member = 2;
+  string member = 2;
 }
-message songs{
+
+message Songs{
   string title = 1;
   string  genre = 2;
   string platform = 3;
 }
-message band{
-  string name = 1;
-}
-message date{
-  int32 date = 1;
-}
+
 message NewRecordRequest {
-  artists artists = 1;
-  songs songs = 2;
+  string rKey=5;
+  int32 rVersion = 6;
+  string date=1;
+  repeated Artists artists=2;
+  string band =3;
+  repeated Songs songs =4;
+}
+
+message RecordCopy {
+  string rKey=5;
+  int32 rVersion = 6;
+  string date=1;
+  repeated Artists artists=2;
+  string band =3;
+  repeated Songs songs =4;
 }
 message NewRecordResponse {
-  string key = 1;
-
+  string rkey = 1;
+  string rVersion=2;
 }
 message UpdateRecordRequest {
-  string key = 1;
+  string rKey = 1;
+  string rVersion=2;
+  RecordCopy rCopy = 3;
+
 }
 message UpdateRecordResponse {
-  string key = 1;
+  string rKey = 1;
+  string rVersion=2;
 }
 message ReadRecordRequest{
-  //
+  string rKey =1;
 }
 message ReadRecordResponse{
-  //
+  string rKey =5;
+  int32 rVersion = 6;
+  string date=1;
+  repeated Artists artists=2;
+  string band =3;
+  repeated Songs songs =4;
 }
-service Records{
-  rpc newRecord(NewRecordRequest) returns(NewRecordResponse);
-  rpc update(UpdateRecordRequest) returns (UpdateRecordResponse);
-  rpc read(ReadRecordRequest) returns(ReadRecordResponse);
+
+message ReadRecordRequest_key_Version{
+  string rKey =1;
+  int32 rVersion =2;
+}
+
+message ReadCriterionRequest{
+  string songTitle = 1;
+  string artistName = 2;
+  string band = 3;
+}
+
+service Cali{
+  rpc writeRecord(NewRecordRequest) returns(NewRecordResponse);
+  rpc updateRecord(UpdateRecordRequest) returns (UpdateRecordResponse);
+  rpc readRecord(ReadRecordRequest) returns(ReadRecordResponse);
+  rpc readRecord_Key_Version(ReadRecordRequest_key_Version) returns(ReadRecordResponse);
+  rpc readRecord_Criterion(ReadCriterionRequest) returns(stream ReadRecordResponse);
 }
