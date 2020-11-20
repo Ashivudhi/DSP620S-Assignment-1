@@ -5,9 +5,9 @@ public function main (string... args) {
     var result = blockingEp->writeRecord(
         {
             rKey: " ",
-            rVersion: 2,
+            rVersion: 1,
             date: "22-03-2020",
-            band: "joseph",
+            band: "dspbando",
             artists: [
                 { 
                     name: "Erro",
