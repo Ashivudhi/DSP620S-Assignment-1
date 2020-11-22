@@ -148,7 +148,7 @@ public type NewRecordResponse record {|
 
 public type UpdateRecordRequest record {|
     string rKey = "";
-    string rVersion = "";
+    int rVersion = 0;
     RecordCopy? rCopy = ();
     
 |};
