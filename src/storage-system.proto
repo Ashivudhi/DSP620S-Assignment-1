@@ -1,11 +1,7 @@
 syntax = "proto3";
-<<<<<<< HEAD
 package service;
 import "google/protobuf/wrappers.proto";
-=======
-import "google/protobuf/wrappers.proto";
-package service;
->>>>>>> c3ec2ea8e388b8d69a5b2e92c181bb7f152ed5e5
+
 
 message  Artists{
   string name = 1;

@@ -43,11 +43,11 @@ service Cali on ep {
 
             //json newRecord = <json>json.constructFrom(value); type casting
             json|error newRecord = json.constructFrom(value);
-            json[] allRecords = [];
-            io:println(newRecord);
-            if(newRecord is error){
-                ///
-            }else{
+            //json[] allRecords = [];
+            //io:println(newRecord);
+            //if(newRecord is error){
+            //    ///
+            //}else{
                 //tried reading the file first before saving
                 //allRecords.push(newRecord);
                 //var readfile = readIntoJson("./storage.json");
@@ -57,19 +57,33 @@ service Cali on ep {
                 //	io:println(readfile);
                 //
                 //	allRecords = readfile;
-                	allRecords.push(newRecord);
-
-                	                var writingfile = writeIntoJson(allRecords,"./storage.json");
-                                    if(writingfile is error){
-                                        io:println(writingfile.detail());
-                                    }else{
-                                        io:println("Successfully stored!!");
-                                    }
-                }
+                //	allRecords.push(newRecord);
+                //
+                //	                var writingfile = writeIntoJson(allRecords,"./storage.json");
+                //                    if(writingfile is error){
+                //                        io:println(writingfile.detail());
+                //                    }else{
+                //                        io:println("Successfully stored!!");
+                //                    }
+                //}
 
 
             //}
 
+
+ if (newRecord is error) {
+            grpc:Error? err = caller->sendError(233, "Failed to Convert new Record");
+        } else {
+            var writingfile = writeIntoJson(newRecord, <@untained>string `./OurJsonFiles/${recordKey}${value.rVersion}.json`);
+            if (writingfile is error) {
+                io:println(writingfile.reason());
+                grpc:Error? err = caller->sendError(233, "Cannot write Record " + writingfile.reason());
+            } else {
+                io:println("Successfully stored!!");
+                grpc:Error? result = caller->send(io:println({rKey: recordKey, rVersion: value.rVersion}));
+                result = caller->complete();
+            }
+        }
 
 
         // You should return a NewRecordResponse
