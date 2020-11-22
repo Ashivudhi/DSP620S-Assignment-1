@@ -28,14 +28,18 @@ service Cali on ep {
 
     resource function writeRecord(grpc:Caller caller, NewRecordRequest value) {
         // Implementation goes here.
-        //--
+        //We assign a
             string input = value.toString();
             byte[] inputArr = input.toBytes();
 
             byte[] output = crypto:hashMd5(inputArr);
             string recordKey = output.toBase64();
             //assigning hashed key to Record key
-            value.rKey = output.toBase16();
+            value.rKey = recordKey;
+
+            //version implementation
+
+            //byte[] rVersion =
 
             //json newRecord = <json>json.constructFrom(value); type casting
             json|error newRecord = json.constructFrom(value);
@@ -44,6 +48,7 @@ service Cali on ep {
             if(newRecord is error){
                 ///
             }else{
+                //tried reading the file first before saving
                 //allRecords.push(newRecord);
                 //var readfile = readIntoJson("./storage.json");
                 //if(readfile is error){
@@ -56,7 +61,7 @@ service Cali on ep {
 
                 	                var writingfile = writeIntoJson(allRecords,"./storage.json");
                                     if(writingfile is error){
-                                        io:println(writingfile.reason());
+                                        io:println(writingfile.detail());
                                     }else{
                                         io:println("Successfully stored!!");
                                     }
