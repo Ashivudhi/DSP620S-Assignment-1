@@ -2,7 +2,7 @@ import ballerina/crypto;
 import ballerina/file;
 import ballerina/grpc;
 import ballerina/io;
-//import ballerina/lang.'int;
+import ballerina/lang.'int;
 
 listener grpc:Listener ep = new (9090);
 
@@ -56,7 +56,7 @@ service Cali on ep {
             } else {
                 io:println("Successfully stored!!");
                 //after saved then send response to  the client that the record has been saved
-                grpc:Error? result = caller->send({rKey: recordKey, rVersion: value.rVersion});
+                grpc:Error? result = caller->send({rkey: recordKey, rVersion: value.rVersion});
 
                 result = caller->complete();
             }
@@ -101,6 +101,53 @@ service Cali on ep {
     }
     resource function readRecord(grpc:Caller caller, ReadRecordRequest value) {
     // Implementation goes here.
+file:FileInfo[]|error readDirResults = file:readDir("./OurJsonFiles");
+        if (readDirResults is error) {
+                grpc:Error? err = caller->sendError(235,"No file To Read");
+        } else {
+            map<json>[] records = [];
+            string rKey = "";
+            string rVer = "";
+            //create json objects of all resources .............
+            foreach var item in readDirResults {
+                //getting all Records Key and Versions
+                rKey = item.getName().substring(0, item.getName().length() - 6);
+                rVer = item.getName().substring(item.getName().length() - 6, item.getName().length() - 5);
+                //creating new Records
+                records.push({rKey: rKey, rVersion: rVer});
+            }
+
+            int[] recordKeys = [];
+            //getting all record belong to the Key passed by client and put all versions in an array Record keys..
+            foreach var rec in records {
+                if (rec.rKey === value.rKey) {
+                    recordKeys.push(<int>'int:fromString(<string>rec.rVersion));
+                }
+            }
+
+            //checking if the Record Exits
+            if (recordKeys.length() != 0) {
+                //sorting the keys in ascending order
+                var sortKeys = recordKeys.sort(function(int a, int b) returns (int) {
+                    return a - b;
+                });
+                var readRecord = readIntoJson(<@untained>string `./OurJsonFile/${value.rKey}${sortKeys[sortKeys.length() - 1]}.json`);
+                if (readRecord is error) {
+                    grpc:Error? err = caller->sendError(234, "Failed to read Records");
+                } else {
+                    //converting Json into Record ReadRecordResponse
+                    ReadRecordResponse|error response = ReadRecordResponse.constructFrom(readRecord);
+                    if (response is error) {
+                        io:println("Converting failed ", response);
+                        grpc:Error? result = caller->sendError(233, "Error failed to convert it.");
+                    } else {
+                        grpc:Error? result = caller->send(response);
+                    }
+                }
+            } else {
+                grpc:Error? err = caller->sendError(234, "Record does not Exist");
+            }
+}
 
     // You should return a ReadRecordResponse
     }
@@ -152,7 +199,7 @@ public type RecordCopy record {|
 
 public type NewRecordResponse record {|
     string rkey = "";
-    string rVersion = "";
+    int rVersion = 0;
 
 |};
 

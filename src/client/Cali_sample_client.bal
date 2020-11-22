@@ -1,11 +1,15 @@
 public function main (string... args) {
 
     CaliBlockingClient blockingEp = new("http://localhost:9090");
+
+
+
+
     
     var result = blockingEp->writeRecord(
         {
             rKey: " ",
-            rVersion: 100001,
+            rVersion: 3,
             date: "22-03-2020",
             band: "dspbando",
             artists: [
