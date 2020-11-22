@@ -77,6 +77,35 @@ service Cali on ep {
     resource function updateRecord(grpc:Caller caller, UpdateRecordRequest value) {
         // Implementation goes here.
 
+boolean record_exists = file:exists(<@untained>string `./ourjsonfiles/${value.rKey}${value.rVersion}.json`);
+
+        if (record_exists) {
+            int ver = (<int>value.rVersion + 2);
+            string rkey = value.rKey;
+            //New Record Copy
+
+            map<json>|error newRec = map<json>.constructFrom(value.rCopy);
+            if (newRec is error) {
+                io:println(newRec);
+            } else {
+                //setting key and Version
+                newRec["rKey"] = rkey;
+                newRec["rVersion"] = ver;
+
+                var writeNewrecord = writeIntoJson(newRec, <@untained>string `./ourjsonfiles/${value.rKey}${ver}.json`);
+                if (writeNewrecord is error) {
+                    //sending error to client that the record cannot be written.
+                    grpc:Error? err = caller->sendError(234, "Record cannot be written");
+                } else {
+                    io:println("Updated Successfully");
+                    //Responding with latest key and version --------------
+                    grpc:Error? result = caller->send({rKey: rkey, rVersion: ver});
+                }
+            }
+        } else {
+            grpc:Error? err = caller->sendError(124, "Record doesn't Exist");
+        }
+
         // You should return a UpdateRecordResponse
     }
     resource function readRecord(grpc:Caller caller, ReadRecordRequest value) {
