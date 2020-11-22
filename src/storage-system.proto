@@ -1,11 +1,6 @@
 syntax = "proto3";
-<<<<<<< HEAD
 package service;
 import "google/protobuf/wrappers.proto";
-=======
-import "google/protobuf/wrappers.proto";
-package service;
->>>>>>> c3ec2ea8e388b8d69a5b2e92c181bb7f152ed5e5
 
 message  Artists{
   string name = 1;
@@ -27,7 +22,7 @@ message NewRecordRequest {
   repeated Songs songs =4;
 }
 
-message RecordCopy {
+message CopyOfRecord {
   string rKey=5;
   int32 rVersion = 6;
   string date=1;
@@ -37,17 +32,17 @@ message RecordCopy {
 }
 message NewRecordResponse {
   string rkey = 1;
-  string rVersion=2;
+  int32 rVersion=2;
 }
 message UpdateRecordRequest {
   string rKey = 1;
-  string rVersion=2;
-  RecordCopy rCopy = 3;
+  int32 rVersion=2;
+  CopyOfRecord rCopy = 3;
 
 }
 message UpdateRecordResponse {
   string rKey = 1;
-  string rVersion=2;
+  int32 rVersion=2;
 }
 message ReadRecordRequest{
   string rKey =1;
